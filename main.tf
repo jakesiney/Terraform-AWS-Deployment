@@ -170,7 +170,6 @@ resource "aws_elastic_beanstalk_environment" "task-listing-app-environment" {
 
 provider "aws" {
   region  = "eu-west-2"
-  profile = "terraform-user"
 }
 
 
