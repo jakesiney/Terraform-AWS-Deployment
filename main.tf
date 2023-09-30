@@ -3,34 +3,37 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
+
     }
   }
 
+
+
   backend "s3" {
-    bucket = "jdtfbucket"
+    bucket = "js-terraform-bucket"
     key    = "path/to/my/key"
     region = "eu-west-2"
   }
 }
 
 data "aws_subnet" "subnet_a" {
-  id = "subnet-0384310cda7f3225b"
+  id = "subnet-07817b04f14c3ba83"
 }
 
 data "aws_subnet" "subnet_b" {
-  id = "subnet-0e606c290592d4005"
+  id = "subnet-0f5c6a45095190c27"
 }
 
 data "aws_subnet" "subnet_c" {
-  id = "subnet-04a8c56d32950f29b"
+  id = "subnet-04208ac89fa9534a4"
 }
 
-resource "aws_db_subnet_group" "jakedenisesubnetgroup" {
-  name       = "jakedenisesubnetgroup"
+resource "aws_db_subnet_group" "db_subnet_group" {
+  name       = "dbsubnetgroup"
   subnet_ids = [data.aws_subnet.subnet_a.id, data.aws_subnet.subnet_b.id, data.aws_subnet.subnet_c.id]
 
   tags = {
-    Name = "jakedenisesubnetgroup"
+    Name = "dbsubnetgroup"
   }
 }
 
@@ -38,32 +41,32 @@ resource "aws_db_instance" "rds_app" {
   allocated_storage    = 10
   engine               = "postgres"
   engine_version       = "15.3"
-  instance_class       = "db.m6g.large"
-  identifier           = "jakedenise-example-app-prod"
-  db_name              = "jakedenisedatabase"
-  db_subnet_group_name = aws_db_subnet_group.jakedenisesubnetgroup.name
-  username             = "root"
-  password             = "password"
+  instance_class       = "db.t3.micro"
+  identifier           = "task-listing-app-db"
+  db_name              = "taskappdb"
+  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
+  username             = VAR.db_username
+  password             = VAR.db_password
   skip_final_snapshot  = true
   publicly_accessible  = true
 }
 
-resource "aws_s3_bucket" "jakedenisebucket" {
-  bucket = "jakedenisebucket"
+resource "aws_s3_bucket" "task-listing-app-bucket" {
+  bucket = "task-listing-app-bucket"
 
   tags = {
-    Name        = "jakedenisebucket"
+    Name        = "task-listing-app-bucket"
     Environment = "Dockerfile"
   }
 }
 
-resource "aws_iam_instance_profile" "jakedeniseprofile" {
-  name = "jake-denise-task-listing-app-ec2-instance-profile"
-  role = aws_iam_role.jakedeniserole.name
+resource "aws_iam_instance_profile" "task-listing-app-profile" {
+  name = "task-listing-app-instance-profile-ec2-instance-profile"
+  role = aws_iam_role.task-listing-app-role.name
 }
 
-resource "aws_iam_role" "jakedeniserole" {
-  name = "jake-denise-task-listing-app-ec2-instance-role"
+resource "aws_iam_role" "task-listing-app-role" {
+  name = "task-listing-app-ec2-instance-role"
 
   // Allows the EC2 instances in our EB environment to assume (take on) this 
   // role. 
@@ -84,48 +87,60 @@ resource "aws_iam_role" "jakedeniserole" {
 
 
 resource "aws_iam_role_policy_attachment" "worker" {
-  role       = aws_iam_role.jakedeniserole.name
+  role       = aws_iam_role.task-listing-app-role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
 }
 
 resource "aws_iam_role_policy_attachment" "docker" {
-  role       = aws_iam_role.jakedeniserole.name
+  role       = aws_iam_role.task-listing-app-role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker"
 }
 
 resource "aws_iam_role_policy_attachment" "webtier" {
-  role       = aws_iam_role.jakedeniserole.name
+  role       = aws_iam_role.task-listing-app-role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
 }
 
 resource "aws_iam_role_policy_attachment" "readonly" {
-  role       = aws_iam_role.jakedeniserole.name
+  role       = aws_iam_role.task-listing-app-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
 
-resource "aws_elastic_beanstalk_application" "example_app" {
-  name        = "jakedenise-task-listing-app"
+resource "aws_elastic_beanstalk_application" "task-listing-app" {
+  name        = "task-listing-app"
   description = "Task listing app"
 }
 
 
 
-resource "aws_elastic_beanstalk_environment" "example_app_environment" {
-  name                = "jakedenise-task-listing-app-environment"
-  application         = aws_elastic_beanstalk_application.example_app.name
+resource "aws_elastic_beanstalk_environment" "task-listing-app-environment" {
+  name                = "task-listing-app-environment"
+  application         = aws_elastic_beanstalk_application.task-listing-app.name
   solution_stack_name = "64bit Amazon Linux 2023 v4.0.1 running Docker"
 
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.jakedeniseprofile.name
+    value     = aws_iam_instance_profile.task-listing-app-profile.name
   }
 
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "EC2KeyName"
-    value     = "jakeDeniseTaskApp"
+    value     = "task-listing-app"
+  }
+
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "InstanceType"
+    value     = "t2.micro"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "EnvironmentType"
+    value     = "singleinstance"
   }
 
   setting {
@@ -159,8 +174,8 @@ provider "aws" {
 }
 
 
-resource "aws_ecr_repository" "app_server_ecr" {
-  name                 = "jakedeniseecr"
+resource "aws_ecr_repository" "task-lising-app-ecr" {
+  name                 = "taskappecr"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -168,3 +183,24 @@ resource "aws_ecr_repository" "app_server_ecr" {
   }
 }
 
+resource "aws_ecr_lifecycle_policy" "task-listing-app-ecr-lifecycle-policy" {
+  repository = aws_ecr_repository.task-lising-app-ecr.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Expire images older than 14 days"
+        selection = {
+          tagStatus   = "any"
+          countType   = "sinceImagePushed"
+          countUnit   = "days"
+          countNumber = 14
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
