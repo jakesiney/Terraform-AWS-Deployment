@@ -45,8 +45,8 @@ resource "aws_db_instance" "rds_app" {
   identifier           = "task-listing-app-db"
   db_name              = "taskappdb"
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
-  username             = var.db_username
-  password             = var.db_password
+  username             = "root"
+  password             = "password"
   skip_final_snapshot  = true
   publicly_accessible  = true
 }
