@@ -28,7 +28,7 @@ data "aws_subnet" "subnet_c" {
   id = "subnet-04208ac89fa9534a4"
 }
 
-resource "aws_db_subnet_group" "db_subnet_group" {
+resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "dbsubnetgroup"
   subnet_ids = [data.aws_subnet.subnet_a.id, data.aws_subnet.subnet_b.id, data.aws_subnet.subnet_c.id]
 
@@ -42,9 +42,9 @@ resource "aws_db_instance" "rds_app" {
   engine               = "postgres"
   engine_version       = "15.3"
   instance_class       = "db.t3.micro"
-  identifier           = "task-listing-app-db"
+  identifier           = "task-listing-app-db-prod"
   db_name              = "taskappdb"
-  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
+  db_subnet_group_name = aws_db_subnet_group.dbsubnetgroup.name
   username             = "root"
   password             = "password"
   skip_final_snapshot  = true
