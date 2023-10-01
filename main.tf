@@ -61,7 +61,7 @@ resource "aws_s3_bucket" "task-listing-app-bucket" {
 }
 
 resource "aws_iam_instance_profile" "task-listing-app-profile" {
-  name = "task-listing-app-instance-profile-ec2-instance-profile"
+  name = "task-listing-app-instance-profile-ec2-instance-profile2"
   role = aws_iam_role.task-listing-app-role.name
 }
 
