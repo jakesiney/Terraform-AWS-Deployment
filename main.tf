@@ -38,17 +38,18 @@ resource "aws_db_subnet_group" "dbsubnetgroup" {
 }
 
 resource "aws_db_instance" "rds_app" {
-  allocated_storage    = 10
-  engine               = "postgres"
-  engine_version       = "15.3"
-  instance_class       = "db.t3.micro"
-  identifier           = "task-listing-app-db-prod"
-  db_name              = "taskappdb"
-  db_subnet_group_name = aws_db_subnet_group.dbsubnetgroup.name
-  username             = "root"
-  password             = "password"
-  skip_final_snapshot  = true
-  publicly_accessible  = true
+  allocated_storage      = 10
+  engine                 = "postgres"
+  engine_version         = "15.3"
+  instance_class         = "db.t3.micro"
+  identifier             = "task-listing-app-db-prod"
+  db_name                = "taskappdb"
+  db_subnet_group_name   = aws_db_subnet_group.dbsubnetgroup.name
+  username               = "root"
+  password               = "password"
+  skip_final_snapshot    = true
+  publicly_accessible    = false
+  vpc_security_group_ids = ["vpc-0d38f63436f126f24", "vpc-0d38f63436f126f24"]
 }
 
 resource "aws_s3_bucket" "task-listing-app-bucket" {
