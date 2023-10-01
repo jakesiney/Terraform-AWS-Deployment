@@ -28,7 +28,7 @@ data "aws_subnet" "subnet_c" {
   id = "subnet-04208ac89fa9534a4"
 }
 
-resource "aws_db_subnet_group" "db_subnet_group" {
+resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "dbsubnetgroup"
   subnet_ids = [data.aws_subnet.subnet_a.id, data.aws_subnet.subnet_b.id, data.aws_subnet.subnet_c.id]
 
