@@ -42,9 +42,9 @@ resource "aws_db_instance" "rds_app" {
   engine               = "postgres"
   engine_version       = "15.3"
   instance_class       = "db.t3.micro"
-  identifier           = "task-listing-app-db"
+  identifier           = "task-listing-app-db-prod"
   db_name              = "taskappdb"
-  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
+  db_subnet_group_name = aws_db_subnet_group.dbsubnetgroup.name
   username             = "root"
   password             = "password"
   skip_final_snapshot  = true
