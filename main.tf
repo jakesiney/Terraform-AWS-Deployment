@@ -49,7 +49,7 @@ resource "aws_db_instance" "rds_app" {
   password               = "password"
   skip_final_snapshot    = true
   publicly_accessible    = false
-  vpc_security_group_ids = ["vpc-0d38f63436f126f24", "vpc-0d38f63436f126f24"]
+  vpc_security_group_ids = ["sg-043d63d70383afd74", "sg-07c662588923dfd94"]
 }
 
 resource "aws_s3_bucket" "task-listing-app-bucket" {
